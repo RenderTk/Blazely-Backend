@@ -1,12 +1,24 @@
+import uuid
 from django.db import models
 from django.conf import settings
+
+
+class BlazelyProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        related_name="blazely_profile",
+        on_delete=models.CASCADE,
+    )
+    birth_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class GroupList(models.Model):
     name = models.CharField(max_length=150)
     archived = models.BooleanField(default=False)
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name="group_lists", on_delete=models.CASCADE
+        BlazelyProfile, related_name="group_lists", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -21,7 +33,7 @@ class TaskList(models.Model):
     )
     archived = models.BooleanField(default=False)
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name="lists", on_delete=models.CASCADE
+        BlazelyProfile, related_name="lists", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -32,7 +44,7 @@ class TaskList(models.Model):
 class Label(models.Model):
     name = models.CharField(max_length=100)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name="labels", on_delete=models.PROTECT
+        BlazelyProfile, related_name="labels", on_delete=models.PROTECT
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -66,7 +78,7 @@ class Task(models.Model):
         TaskList, related_name="tasks", on_delete=models.CASCADE, null=True
     )
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name="tasks", on_delete=models.CASCADE
+        BlazelyProfile, related_name="tasks", on_delete=models.CASCADE
     )
     created_date = models.DateTimeField(auto_now_add=True)
     archived = models.BooleanField(default=False)
