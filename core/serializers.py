@@ -1,3 +1,5 @@
+from django.db import models
+
 from djoser.serializers import (
     UserCreateSerializer as BaseUserCreateSerializer,
     UserSerializer as BaseUserSerializer,
@@ -27,3 +29,5 @@ class UserSerializer(BaseUserSerializer):
             "username",
             "email",
         ]
+
+        read_only_fields = ["username", "email"]
