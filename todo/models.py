@@ -80,7 +80,7 @@ class Task(models.Model):
     owner = models.ForeignKey(
         BlazelyProfile, related_name="tasks", on_delete=models.CASCADE
     )
-    created_date = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     archived = models.BooleanField(default=False)
 
     def __str__(self):
@@ -90,7 +90,7 @@ class Task(models.Model):
 class TaskStep(models.Model):
     text = models.TextField()
     task = models.ForeignKey(Task, related_name="steps", on_delete=models.CASCADE)
-    created_date = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.text
