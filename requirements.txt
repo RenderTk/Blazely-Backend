@@ -4,3 +4,4 @@ djoser
 djangorestframework
 djangorestframework-simplejwt
 python-dotenv
+drf-nested-routers
