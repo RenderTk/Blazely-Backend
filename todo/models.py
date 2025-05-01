@@ -63,7 +63,7 @@ class Task(models.Model):
     )
 
     text = models.CharField(max_length=255)
-    note = models.CharField(max_length=255)
+    note = models.CharField(max_length=255, null=True)
     is_completed = models.BooleanField(default=False, db_index=True)
     is_important = models.BooleanField(default=False, db_index=True)
     due_date = models.DateField(null=True, db_index=True)
@@ -75,7 +75,7 @@ class Task(models.Model):
         Label, related_name="tasks", on_delete=models.SET_NULL, null=True
     )
     task_list = models.ForeignKey(
-        TaskList, related_name="tasks", on_delete=models.CASCADE, null=True
+        TaskList, related_name="tasks", on_delete=models.CASCADE
     )
     owner = models.ForeignKey(
         BlazelyProfile, related_name="tasks", on_delete=models.CASCADE
