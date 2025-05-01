@@ -24,4 +24,5 @@ urlpatterns = [
     path("auth/", include("djoser.urls")),
     path("auth/", include("djoser.urls.jwt")),
     path("api/", include("todo.urls")),
+    path("auth/", include("core.urls")),
 ] + debug_toolbar_urls()
