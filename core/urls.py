@@ -1,7 +1,20 @@
 from django.urls import path
-from .views import GoogleLoginView, GoogleCallbackView
+from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
+from .views import (
+    GoogleLoginView,
+    GoogleCallbackView,
+    UserViewSet,
+    AdminOnlyTokenObtainPairView,
+)
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+router.register("users", UserViewSet, basename="user")
 
 urlpatterns = [
     path("google/login/", GoogleLoginView.as_view(), name="google_login"),
     path("google/callback/", GoogleCallbackView.as_view(), name="google_callback"),
-]
+    path("jwt/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("jwt/verify/", TokenVerifyView.as_view(), name="token_verify"),
+    path("jwt/create/", AdminOnlyTokenObtainPairView.as_view(), name="token_create"),
+] + router.urls

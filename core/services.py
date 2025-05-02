@@ -63,8 +63,10 @@ def authenticate_google_user(code: str) -> Response:
             "last_name": user_info.get("family_name", ""),  # Get last name
         },
     )
-    user.set_unusable_password()
-    user.save()
+    if not created:
+        user.set_unusable_password()
+        user.save()
+
     refresh = RefreshToken.for_user(user)
     return Response(
         {

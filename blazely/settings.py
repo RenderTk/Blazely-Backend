@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "debug_toolbar",
     "rest_framework",
-    "djoser",
     "core",
     "todo",
 ]
@@ -152,12 +151,11 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
 }
 
-DJOSER = {
-    "SERIALIZERS": {
-        "user_create": "core.serializers.UserCreateSerializer",
-        "current_user": "core.serializers.UserSerializer",
-    },
-}
+if DEBUG:
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
+        "rest_framework.renderers.BrowsableAPIRenderer",
+        "rest_framework.renderers.JSONRenderer",
+    ]
 
 
 SIMPLE_JWT = {
@@ -166,11 +164,6 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-if DEBUG:
-    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
-        "rest_framework.renderers.BrowsableAPIRenderer",
-        "rest_framework.renderers.JSONRenderer",
-    ]
 if DEBUG:
     SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"] = timedelta(
         seconds=int(os.getenv("ACCESS_TOKEN_LIFETIME_IN_SECONDS_FOR_DEBUG"))
