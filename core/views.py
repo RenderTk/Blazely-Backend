@@ -15,7 +15,7 @@ from .serializers import (
     UserUpdateSerializer,
     UserActivationSerializer,
 )
-from .services import authenticate_google_user
+from .services import authenticate_google_user, authenticate_google_id_token
 
 User = get_user_model()
 
@@ -133,7 +133,7 @@ class GoogleLoginView(APIView):
         redirect_uri = settings.SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI
         login_url = (
             f"https://accounts.google.com/o/oauth2/v2/auth?"
-            f"client_id={settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY}&"
+            f"client_id={settings.SOCIAL_AUTH_GOOGLE_WEBCLIENT_ID}&"
             f"response_type=code&"
             f"redirect_uri={redirect_uri}&"
             f"scope=email%20profile"
@@ -155,3 +155,18 @@ class GoogleCallbackView(APIView):
             )
         # Authenticate the user with the provided authorization code
         return authenticate_google_user(code)
+
+
+class GoogleIdTokenView(APIView):
+    """View to handle Google ID token validation"""
+
+    def post(self, request):
+        # Extract the ID token from the request body
+        id_token = request.data.get("id_token")
+        # Validate that an ID token is provided
+        if not id_token:
+            return Response(
+                {"error": "No ID token provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        # Authenticate the user with the provided ID token
+        return authenticate_google_id_token(id_token)
