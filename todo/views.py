@@ -64,7 +64,6 @@ class TaskViewSet(ModelViewSet):
 class TaskStepViewSet(ModelViewSet):
     serializer_class = TaskStepSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ["get", "post", "put", "head", "options"]
 
     def get_queryset(self):
         user = self.request.user
