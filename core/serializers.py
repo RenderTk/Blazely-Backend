@@ -1,8 +1,6 @@
-from djoser.serializers import (
-    UserCreateSerializer as BaseUserCreateSerializer,
-    UserSerializer as BaseUserSerializer,
-)
+from django.db import transaction
 from rest_framework import serializers
+from todo.models import BlazelyProfile
 from .models import User
 
 
@@ -37,6 +35,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
             "is_staff",
             "is_superuser",
         ]
+
+    @transaction.atomic
+    def create(self, validated_data):
+        user = super().create(validated_data)
+        BlazelyProfile.objects.create(user=user)
+        return user
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

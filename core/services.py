@@ -4,14 +4,41 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from typing import Dict
+from todo.models import BlazelyProfile
 from .models import GOOGLE_AUTH_PROVIDER
 from .models import User
 
 User = get_user_model()
+
+
+def get_or_create_user(
+    email: str, first_name: str = "", last_name: str = "", picture_url: str = None
+):
+
+    if email is None:
+        raise ValidationError({"email": ["Email is required"]})
+
+    user, created = User.objects.get_or_create(
+        email=email,  # Use email to identify users
+        auth_provider=GOOGLE_AUTH_PROVIDER,
+        defaults={
+            "username": email,
+            "first_name": first_name or "",
+            "last_name": last_name or "",
+        },
+    )
+
+    if created:
+        user.set_unusable_password()
+        user.save()
+        BlazelyProfile.objects.create(user=user, profile_picture_url=picture_url)
+
+    return user
 
 
 @transaction.atomic
@@ -55,18 +82,12 @@ def authenticate_google_user(code: str) -> Response:
             {"error": "Could not retrieve user info", "details": str(e)},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    user, created = User.objects.get_or_create(
-        email=user_info["email"],  # Use email to identify users
-        auth_provider=GOOGLE_AUTH_PROVIDER,
-        defaults={
-            "username": user_info.get("email"),  # Set username as email
-            "first_name": user_info.get("given_name", ""),  # Get first name
-            "last_name": user_info.get("family_name", ""),  # Get last name
-        },
+    user = get_or_create_user(
+        email=user_info["email"],
+        first_name=user_info["given_name"],
+        last_name=user_info["family_name"],
+        picture_url=user_info["picture"],
     )
-    if not created:
-        user.set_unusable_password()
-        user.save()
 
     refresh = RefreshToken.for_user(user)
     return Response(
@@ -98,7 +119,7 @@ def authenticate_google_id_token(token: str) -> Response:
         )
         # Verify the issuer (an extra check, though verify_oauth2_token usually covers this)
         if idinfo["iss"] not in ["accounts.google.com", "https://accounts.google.com"]:
-            raise ValueError("Wrong issuer.")
+            raise ValidationError({"error": "Wrong issuer."})
 
     except requests.exceptions.RequestException as e:
         return Response(
@@ -110,18 +131,12 @@ def authenticate_google_id_token(token: str) -> Response:
     if not email:
         return Response({"error": "Email not available in token"}, status=400)
 
-    user, created = User.objects.get_or_create(
-        email=email,
-        auth_provider=GOOGLE_AUTH_PROVIDER,
-        defaults={
-            "username": email,
-            "first_name": idinfo.get("given_name", ""),
-            "last_name": idinfo.get("family_name", ""),
-        },
+    user = get_or_create_user(
+        email=idinfo["email"],
+        first_name=idinfo["given_name"],
+        last_name=idinfo["family_name"],
+        picture_url=idinfo["picture"],
     )
-    if not created:
-        user.set_unusable_password()
-        user.save()
 
     refresh = RefreshToken.for_user(user)
     return Response(

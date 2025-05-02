@@ -136,7 +136,14 @@ class BlazelyProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BlazelyProfile
-        fields = ["id", "birth_date", "user", "lists", "group_lists"]
+        fields = [
+            "id",
+            "birth_date",
+            "user",
+            "profile_picture_url",
+            "lists",
+            "group_lists",
+        ]
         read_only_fields = ["user"]
 
     def create(self, validated_data):
@@ -151,7 +158,7 @@ class BlazelyProfileSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class BlazelyProfileCreateUpdateSerializer(serializers.ModelSerializer):
+class BlazelyProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlazelyProfile
         fields = ["birth_date"]

@@ -11,6 +11,7 @@ class BlazelyProfile(models.Model):
         on_delete=models.CASCADE,
     )
     birth_date = models.DateField(null=True, blank=True)
+    profile_picture_url = models.URLField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 

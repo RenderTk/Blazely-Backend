@@ -12,10 +12,10 @@ from .models import *
 class BlazelyProfileViewSet(ModelViewSet):
     serializer_class = BlazelyProfileSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ["get", "post", "patch", "head", "options"]
+    http_method_names = ["get", "patch", "head", "options"]
 
     def get_queryset(self):
-        if self.request.user.is_superuser:
+        if self.request.user.is_staff or self.request.user.is_superuser:
             return BlazelyProfile.objects.all()
         return (
             BlazelyProfile.objects.prefetch_related("group_lists__lists__tasks__steps")
@@ -26,7 +26,7 @@ class BlazelyProfileViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return BlazelyProfileSerializer
-        return BlazelyProfileCreateUpdateSerializer
+        return BlazelyProfileUpdateSerializer
 
     def get_serializer_context(self):
         return {"user": self.request.user}
