@@ -1,5 +1,9 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
+from rest_framework_simplejwt.views import (
+    TokenRefreshView,
+    TokenVerifyView,
+    TokenBlacklistView,
+)
 from .views import (
     GoogleLoginView,
     GoogleCallbackView,
@@ -23,4 +27,5 @@ urlpatterns = [
     path("jwt/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("jwt/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("jwt/create/", AdminOnlyTokenObtainPairView.as_view(), name="token_create"),
+    path("jwt/blacklist/", TokenBlacklistView.as_view(), name="token_blacklist"),
 ] + router.urls
