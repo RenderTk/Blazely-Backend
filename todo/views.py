@@ -14,6 +14,11 @@ class BlazelyProfileViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     http_method_names = ["get", "patch", "head", "options"]
 
+    def get_permissions(self):
+        if self.action == "list":
+            return [IsAdminUser()]
+        return super().get_permissions()
+
     def get_queryset(self):
         if self.request.user.is_staff or self.request.user.is_superuser:
             return BlazelyProfile.objects.all()

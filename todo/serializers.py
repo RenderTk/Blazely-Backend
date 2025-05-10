@@ -16,7 +16,7 @@ class TaskStepSerializer(serializers.ModelSerializer):
         task_id = self.context.get("task_id")
         task = Task.objects.filter(id=task_id).first()
         if not task:
-            raise ValidationError("Task is required to create a task step.")
+            raise ValidationError({"task": "Task is required to create a step."})
 
         validated_data["task"] = task
         return super().create(validated_data)
@@ -45,12 +45,16 @@ class TaskSerializer(serializers.ModelSerializer):
         user_id = self.context.get("user_id")
         owner = BlazelyProfile.objects.filter(user_id=user_id).first()
         if not owner:
-            raise serializers.ValidationError("Profile is required to create a task.")
+            raise serializers.ValidationError(
+                {"owner": "Profile is required to create a task."}
+            )
 
         task_list_id = self.context.get("task_list_id")
         task_list = TaskList.objects.filter(id=task_list_id).first()
         if not task_list:
-            raise serializers.ValidationError("Task list is required to create a task.")
+            raise serializers.ValidationError(
+                {"task_list": "Task list is required to create a task."}
+            )
 
         validated_data["owner"] = owner
         validated_data["task_list"] = task_list
@@ -72,8 +76,13 @@ class TaskListSerializer(serializers.ModelSerializer):
         owner = BlazelyProfile.objects.filter(user_id=user_id).first()
         if not owner:
             raise serializers.ValidationError(
-                "Profile is required to create a task list."
+                {"owner": "Profile is required to create a task list."}
             )
+        if TaskList.objects.filter(name=validated_data["name"], owner=owner).exists():
+            raise serializers.ValidationError(
+                {"name": "List with given name already exists."}
+            )
+
         group_id = self.context.get("group_id")
         group = GroupList.objects.filter(id=group_id).first()
         if group:
@@ -92,13 +101,18 @@ class GroupListSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_id = self.context.get("user_id")
-        profile = BlazelyProfile.objects.filter(user_id=user_id).first()
-        if not profile:
+        owner = BlazelyProfile.objects.filter(user_id=user_id).first()
+        if GroupList.objects.filter(name=validated_data["name"], owner=owner).exists():
             raise serializers.ValidationError(
-                "Profile is required to create a group list."
+                {"name": "Group list with given name already exists."}
             )
 
-        validated_data["owner"] = profile
+        if not owner:
+            raise serializers.ValidationError(
+                {"owner": "Profile is required to create a group list."}
+            )
+
+        validated_data["owner"] = owner
         return super().create(validated_data)
 
 
@@ -149,7 +163,7 @@ class BlazelyProfileSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context.get("user")
         if not user:
-            raise ValidationError("User is required to create a profile.")
+            raise ValidationError({"user": "User is required to create a profile."})
 
         if BlazelyProfile.objects.filter(user=user).exists():
             raise ValidationError("User already has a profile.")

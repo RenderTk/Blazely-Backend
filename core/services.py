@@ -84,9 +84,9 @@ def authenticate_google_user(code: str) -> Response:
         )
     user = get_or_create_user(
         email=user_info["email"],
-        first_name=user_info["given_name"],
-        last_name=user_info["family_name"],
-        picture_url=user_info["picture"],
+        first_name=user_info.get("given_name", ""),
+        last_name=user_info.get("family_name", ""),
+        picture_url=user_info.get("picture", None),
     )
 
     refresh = RefreshToken.for_user(user)
@@ -133,9 +133,9 @@ def authenticate_google_id_token(token: str) -> Response:
 
     user = get_or_create_user(
         email=idinfo["email"],
-        first_name=idinfo["given_name"],
-        last_name=idinfo["family_name"],
-        picture_url=idinfo["picture"],
+        first_name=idinfo.get("given_name", ""),
+        last_name=idinfo.get("family_name", ""),
+        picture_url=idinfo.get("picture", None),
     )
 
     refresh = RefreshToken.for_user(user)

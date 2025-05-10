@@ -26,6 +26,11 @@ class GroupList(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["name", "owner"], name="unique_group_list")
+        ]
+
 
 class TaskList(models.Model):
     name = models.CharField(max_length=150)
@@ -41,13 +46,23 @@ class TaskList(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["name", "owner"], name="unique_task_list")
+        ]
+
 
 class Label(models.Model):
     name = models.CharField(max_length=100)
-    created_by = models.ForeignKey(
+    owner = models.ForeignKey(
         BlazelyProfile, related_name="labels", on_delete=models.PROTECT
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["name", "owner"], name="unique_label")
+        ]
 
 
 class Task(models.Model):
