@@ -70,7 +70,13 @@ class TaskListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TaskList
-        fields = ["id", "name", "emoji", "tasks"]
+        fields = [
+            "id",
+            "name",
+            "emoji",
+            "group",
+            "tasks",
+        ]
 
     def validate_emoji(self, value):
         if not emoji.is_emoji(value):
@@ -98,8 +104,16 @@ class TaskListSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class SimpleTaskListSerializer(serializers.ModelSerializer):
+    tasks = TaskSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = TaskList
+        fields = ["id", "name", "emoji", "tasks"]
+
+
 class GroupListSerializer(serializers.ModelSerializer):
-    lists = TaskListSerializer(many=True, read_only=True)
+    lists = SimpleTaskListSerializer(many=True, read_only=True)
 
     class Meta:
         model = GroupList
