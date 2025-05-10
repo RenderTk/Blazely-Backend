@@ -41,6 +41,7 @@ class TaskList(models.Model):
     owner = models.ForeignKey(
         BlazelyProfile, related_name="lists", on_delete=models.CASCADE
     )
+    emoji = models.CharField(max_length=100, null=True, default="📃")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

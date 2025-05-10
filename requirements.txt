@@ -5,3 +5,4 @@ djangorestframework-simplejwt
 python-dotenv
 drf-nested-routers
 google-api-python-client
+emoji

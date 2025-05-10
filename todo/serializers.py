@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.db.models import Prefetch
+import emoji
 
 User = get_user_model()
 
@@ -69,7 +70,12 @@ class TaskListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TaskList
-        fields = ["id", "name", "tasks"]
+        fields = ["id", "name", "emoji", "tasks"]
+
+    def validate_emoji(self, value):
+        if not emoji.is_emoji(value):
+            raise ValidationError({"emoji": "Invalid emoji."})
+        return value
 
     def create(self, validated_data):
         user_id = self.context.get("user_id")
