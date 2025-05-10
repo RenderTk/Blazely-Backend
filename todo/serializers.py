@@ -130,29 +130,6 @@ class SimpleUserSerializer(serializers.ModelSerializer):
 
 class BlazelyProfileSerializer(serializers.ModelSerializer):
     user = SimpleUserSerializer(read_only=True)
-    group_lists = GroupListSerializer(many=True, read_only=True)
-    lists = serializers.SerializerMethodField(
-        method_name="get_lists_without_group", read_only=True
-    )
-
-    def get_lists_without_group(self, profile: BlazelyProfile):
-        # Check if ungrouped_lists already exists on the profile instance
-        if hasattr(profile, "ungrouped_lists"):
-            ungrouped_lists = profile.ungrouped_lists
-        else:
-            # Only query if the lists weren't prefetched
-            queryset = BlazelyProfile.objects.prefetch_related(
-                Prefetch(
-                    "lists",
-                    queryset=TaskList.objects.filter(group=None).prefetch_related(
-                        "tasks__steps"
-                    ),
-                    to_attr="ungrouped_lists",
-                )
-            ).get(id=profile.id)
-            ungrouped_lists = queryset.ungrouped_lists
-
-        return TaskListSerializer(ungrouped_lists, many=True).data
 
     class Meta:
         model = BlazelyProfile
@@ -161,8 +138,6 @@ class BlazelyProfileSerializer(serializers.ModelSerializer):
             "birth_date",
             "user",
             "profile_picture_url",
-            "lists",
-            "group_lists",
         ]
         read_only_fields = ["user"]
 
