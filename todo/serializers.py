@@ -14,8 +14,15 @@ class TaskStepSerializer(serializers.ModelSerializer):
         fields = ["id", "text"]
 
     def create(self, validated_data):
+        user_id = self.context.get("user_id")
+        owner = BlazelyProfile.objects.filter(user_id=user_id).first()
+        if not owner:
+            raise serializers.ValidationError(
+                {"owner": "Profile is required to create a task."}
+            )
+
         task_id = self.context.get("task_id")
-        task = Task.objects.filter(id=task_id).first()
+        task = Task.objects.filter(id=task_id, owner=owner).first()
         if not task:
             raise ValidationError({"task": "Task is required to create a step."})
 
@@ -51,7 +58,7 @@ class TaskSerializer(serializers.ModelSerializer):
             )
 
         task_list_id = self.context.get("task_list_id")
-        task_list = TaskList.objects.filter(id=task_list_id).first()
+        task_list = TaskList.objects.filter(id=task_list_id, owner=owner).first()
         if not task_list:
             raise serializers.ValidationError(
                 {"task_list": "Task list is required to create a task."}
@@ -94,9 +101,36 @@ class TaskListSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"name": "List with given name already exists."}
             )
+        validated_data["owner"] = owner
+        return super().create(validated_data)
+
+
+class TaskListWithoutGroupSerializer(serializers.ModelSerializer):
+    tasks = TaskSerializer(many=True, read_only=True)
+
+    def validate_emoji(self, value):
+        if not emoji.is_emoji(value):
+            raise ValidationError({"emoji": "Invalid emoji."})
+        return value
+
+    class Meta:
+        model = TaskList
+        fields = ["id", "name", "emoji", "tasks"]
+
+    def create(self, validated_data):
+        user_id = self.context.get("user_id")
+        owner = BlazelyProfile.objects.filter(user_id=user_id).first()
+        if not owner:
+            raise serializers.ValidationError(
+                {"owner": "Profile is required to create a task list."}
+            )
+        if TaskList.objects.filter(name=validated_data["name"], owner=owner).exists():
+            raise serializers.ValidationError(
+                {"name": "List with given name already exists."}
+            )
 
         group_id = self.context.get("group_id")
-        group = GroupList.objects.filter(id=group_id).first()
+        group = GroupList.objects.filter(id=group_id, owner=owner).first()
         if group:
             validated_data["group"] = group
 
@@ -104,16 +138,8 @@ class TaskListSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class SimpleTaskListSerializer(serializers.ModelSerializer):
-    tasks = TaskSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = TaskList
-        fields = ["id", "name", "emoji", "tasks"]
-
-
 class GroupListSerializer(serializers.ModelSerializer):
-    lists = SimpleTaskListSerializer(many=True, read_only=True)
+    lists = TaskListWithoutGroupSerializer(many=True, read_only=True)
 
     class Meta:
         model = GroupList

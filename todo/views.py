@@ -95,13 +95,14 @@ class TaskStepViewSet(ModelViewSet):
         )
 
     def get_serializer_context(self):
-        return {"task_id": self.kwargs.get("task_pk", None)}
+        return {
+            "user_id": self.request.user.id,
+            "task_id": self.kwargs.get("task_pk", None),
+        }
 
 
 class TaskListViewSet(ModelViewSet):
-    serializer_class = TaskListSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ["get", "post", "put", "head", "options"]
 
     def get_queryset(self):
         user = self.request.user
@@ -121,6 +122,12 @@ class TaskListViewSet(ModelViewSet):
             .filter(owner__user=user, group=None)
             .order_by("created_at")
         )
+
+    def get_serializer_class(self):
+        group_id = self.kwargs.get("group_pk", None)
+        if group_id:
+            return TaskListWithoutGroupSerializer
+        return TaskListSerializer
 
     def get_serializer_context(self):
         # if group_id was not provided in the url
