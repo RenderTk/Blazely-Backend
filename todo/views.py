@@ -51,7 +51,10 @@ class TaskViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        task_list_id = self.kwargs["list_pk"]
+        task_list_id = self.kwargs.get("list_pk", None)
+
+        if not task_list_id:
+            return Task.objects.filter(owner__user=user).order_by("created_at")
 
         return (
             Task.objects.prefetch_related("steps")
@@ -64,6 +67,19 @@ class TaskViewSet(ModelViewSet):
             "user_id": self.request.user.id,
             "task_list_id": self.kwargs.get("list_pk", None),
         }
+
+    def create(self, request, *args, **kwargs):
+        task_list_id = self.kwargs.get("list_pk", None)
+
+        if not task_list_id:
+            return Response(
+                {
+                    "task_list": "Tasks can only be created via nested endpoints under a list or group. List ID must be passed through the URL."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return super().create(request, *args, **kwargs)
 
 
 class TaskStepViewSet(ModelViewSet):
@@ -102,7 +118,7 @@ class TaskListViewSet(ModelViewSet):
         # if group_id was not provided
         return (
             TaskList.objects.prefetch_related("tasks__steps")
-            .filter(owner__user=user)
+            .filter(owner__user=user, group=None)
             .order_by("created_at")
         )
 

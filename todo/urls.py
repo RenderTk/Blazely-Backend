@@ -12,6 +12,8 @@ router = routers.DefaultRouter()
 router.register("profiles", BlazelyProfileViewSet, basename="profile")
 router.register("lists", TaskListViewSet, basename="list")
 router.register("groups", GroupListViewSet, basename="group")
+router.register("tasks", TaskViewSet, basename="task")
+
 
 # Group -> Lists nesting
 group_router = routers.NestedDefaultRouter(router, "groups", lookup="group")
@@ -41,6 +43,9 @@ list_task_router = routers.NestedDefaultRouter(list_router, "tasks", lookup="tas
 list_task_router.register("steps", TaskStepViewSet, basename="list-task-step")
 
 
+task_step_router = routers.NestedDefaultRouter(router, "tasks", lookup="task")
+task_step_router.register("steps", TaskStepViewSet, basename="task-step")
+
 # Combine all URLs
 urlpatterns = (
     router.urls
@@ -49,4 +54,5 @@ urlpatterns = (
     + group_list_router.urls
     + list_task_router.urls
     + group_list_task_router.urls
+    + task_step_router.urls
 )
