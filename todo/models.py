@@ -84,7 +84,7 @@ class Task(models.Model):
     is_completed = models.BooleanField(default=False, db_index=True)
     is_important = models.BooleanField(default=False, db_index=True)
     due_date = models.DateField(null=True, db_index=True)
-    reminder_date = models.DateField(null=True)
+    reminder_date = models.DateTimeField(null=True)
     priority = models.CharField(
         max_length=1, choices=PRIORITY_CHOICES, default=PRIORITY_4, db_index=True
     )
