@@ -1,12 +1,14 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.decorators import action
-from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from .serializers import *
 from .models import *
+from .filters import *
 
 
 class BlazelyProfileViewSet(ModelViewSet):
@@ -48,13 +50,19 @@ class BlazelyProfileViewSet(ModelViewSet):
 class TaskViewSet(ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TaskFilter
 
     def get_queryset(self):
         user = self.request.user
         task_list_id = self.kwargs.get("list_pk", None)
 
         if not task_list_id:
-            return Task.objects.filter(owner__user=user).order_by("created_at")
+            return (
+                Task.objects.prefetch_related("steps")
+                .filter(owner__user=user)
+                .order_by("created_at")
+            )
 
         return (
             Task.objects.prefetch_related("steps")
@@ -85,6 +93,8 @@ class TaskViewSet(ModelViewSet):
 class TaskStepViewSet(ModelViewSet):
     serializer_class = TaskStepSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TaskStepFilter
 
     def get_queryset(self):
         user = self.request.user
@@ -103,6 +113,8 @@ class TaskStepViewSet(ModelViewSet):
 
 class TaskListViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TaskListFilter
 
     def get_queryset(self):
         user = self.request.user
@@ -119,7 +131,7 @@ class TaskListViewSet(ModelViewSet):
         # if group_id was not provided
         return (
             TaskList.objects.prefetch_related("tasks__steps")
-            .filter(owner__user=user, group=None)
+            .filter(owner__user=user)
             .order_by("created_at")
         )
 
@@ -141,6 +153,8 @@ class TaskListViewSet(ModelViewSet):
 class GroupListViewSet(ModelViewSet):
     serializer_class = GroupListSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = GroupListFilter
 
     def get_queryset(self):
         user = self.request.user

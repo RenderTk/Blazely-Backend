@@ -2,6 +2,7 @@ mysqlclient
 django
 djangorestframework
 djangorestframework-simplejwt
+django-filter
 python-dotenv
 drf-nested-routers
 google-api-python-client
