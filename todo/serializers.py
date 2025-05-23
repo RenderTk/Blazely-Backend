@@ -2,7 +2,7 @@ from .models import *
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
-from django.db.models import Prefetch
+from django.db import transaction
 import emoji
 
 User = get_user_model()
@@ -160,6 +160,57 @@ class GroupListSerializer(serializers.ModelSerializer):
 
         validated_data["owner"] = owner
         return super().create(validated_data)
+
+
+class ManageListsOnGroupSerializer(serializers.Serializer):
+    tasklist_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=True,
+        allow_empty=False,
+        allow_null=False,
+    )
+
+    def validate_tasklist_ids(self, value):
+        action = self.context.get("action")
+        group_list = self.context.get("group_list")
+
+        if action == "add":
+            valid_tasklists = TaskList.objects.filter(id__in=value).exclude(
+                group=group_list
+            )
+            error_msg = "already assigned to this group"
+        elif action == "remove":
+            valid_tasklists = TaskList.objects.filter(id__in=value, group=group_list)
+            error_msg = "not assigned to this group"
+
+        if not valid_tasklists.exists():
+            raise serializers.ValidationError(
+                {
+                    "tasklist_ids": f"No valid tasklists found for this action - they may be {error_msg}."
+                }
+            )
+
+        return value
+
+    def save(self, **kwargs):
+        action = self.context.get("action")
+        group = self.context.get("group_list")
+
+        if action not in ["add", "remove"]:
+            raise serializers.ValidationError(
+                {"action": "Invalid or missing action. Expected 'add' or 'remove'."}
+            )
+
+        tasklist_ids = self.validated_data.get("tasklist_ids", [])
+
+        with transaction.atomic():
+            # Your existing save logic here
+            if action == "add":
+                TaskList.objects.filter(id__in=tasklist_ids).update(group=group)
+            elif action == "remove":
+                TaskList.objects.filter(id__in=tasklist_ids).update(group=None)
+
+        return group
 
 
 class SimpleUserSerializer(serializers.ModelSerializer):
