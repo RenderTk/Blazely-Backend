@@ -1,6 +1,6 @@
 from django.db import transaction
-from django.conf import settings
-from django.apps import apps
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from profiles.models import Profile
 from .models import User
@@ -71,7 +71,55 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserSerializer(serializers.ModelSerializer):
+class SuperUserUpdateSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(
+        max_length=100,
+        required=True,
+        allow_blank=False,
+        allow_null=False,
+        trim_whitespace=True,
+        min_length=2,
+    )
+    last_name = serializers.CharField(
+        max_length=100,
+        required=True,
+        allow_blank=False,
+        allow_null=False,
+        trim_whitespace=True,
+        min_length=2,
+    )
+
+    password = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        allow_null=False,
+        trim_whitespace=True,
+        validators=[validate_password],
+        style={"input_type": "password"},
+    )
+
+    class Meta:
+        model = User
+        fields = [
+            "first_name",
+            "last_name",
+            "is_staff",
+            "is_superuser",
+            "username",
+            "password",
+        ]
+
+    def update(self, instance, validated_data):
+        password = validated_data.get("password", None)
+
+        # If password is provided, update it to the hashed version
+        if password:
+            validated_data["password"] = make_password(password)
+
+        return super().update(instance, validated_data)
+
+
+class SuperUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
@@ -79,6 +127,10 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "first_name",
             "last_name",
+            "username",
+            "is_staff",
+            "is_superuser",
+            "is_active",
             "email",
         ]
 
@@ -104,7 +156,8 @@ class UserActivationSerializer(serializers.Serializer):
 
         self.instance.save()
 
+
 class SimpleUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["username", "email", "first_name", "last_name"]
+        fields = ["email", "first_name", "last_name"]

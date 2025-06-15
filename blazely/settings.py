@@ -187,13 +187,18 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = os.getenv(
 )
 
 
-#BLAZELY APP'S MODELS
+# BLAZELY APP'S MODELS
 PROFILE_MODEL = "profiles.Profile"
 TASK_MODEL = "tasks.Task"
 TASKLIST_MODEL = "tasklists.TaskList"
 GROUP_LIST_MODEL = "grouplists.GroupList"
 
-#BLAZELY APP'S SERIALIZERS
+# BLAZELY APP'S SERIALIZERS
 SIMPLE_USER_SERIALIZER = "core.serializers.SimpleUserSerializer"
 TASK_SERIALIZER = "tasks.serializers.TaskSerializer"
-TASKLIST_WITHOUT_GROUP_SERIALIZER = "tasklists.serializers.TaskListWithoutGroupSerializer"
+TASKLIST_WITHOUT_GROUP_SERIALIZER = (
+    "tasklists.serializers.TaskListWithoutGroupSerializer"
+)
+
+# Blazely Custom Permissions
+IS_SUPER_USER = "core.permisions.IsSuperUser"
