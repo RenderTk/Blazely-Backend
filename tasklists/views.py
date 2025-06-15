@@ -58,6 +58,6 @@ class TaskListViewSet(ModelViewSet):
         # if group_id was not provided in the url
         # validation will be done in the serializer
         return {
-            "user_id": self.request.user.id,
+            "user": self.request.user,
             "group_id": self.kwargs.get("group_pk", None),
         }

@@ -39,7 +39,7 @@ class GroupListViewSet(ModelViewSet):
         return GroupListSerializer
 
     def get_serializer_context(self):
-        return {"user_id": self.request.user.id}
+        return {"user": self.request.user}
 
     @action(detail=True, methods=["patch"])
     def manage_lists(self, request, pk=None):

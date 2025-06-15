@@ -16,8 +16,8 @@ class TaskStepSerializer(serializers.ModelSerializer):
         fields = ["id", "text"]
 
     def create(self, validated_data):
-        user_id = self.context.get("user_id")
-        owner = Profile.objects.filter(user_id=user_id).first()
+        user = self.context.get("user")
+        owner = Profile.objects.filter(user=user).first()
         if not owner:
             raise serializers.ValidationError(
                 {"owner": "Profile is required to create a task."}
@@ -54,8 +54,8 @@ class TaskSerializer(serializers.ModelSerializer):
         read_only_fields = ["owner"]
 
     def create(self, validated_data):
-        user_id = self.context.get("user_id")
-        owner = Profile.objects.filter(user_id=user_id).first()
+        user = self.context.get("user")
+        owner = Profile.objects.filter(user=user).first()
         if not owner:
             raise serializers.ValidationError(
                 {"owner": "Profile is required to create a task."}
@@ -82,13 +82,13 @@ class LabelSerializer(serializers.ModelSerializer):
         fields = ["name"]
 
     def create(self, validated_data):
-        user_id = self.context.get("user_id")
-        if not user_id:
+        user = self.context.get("user")
+        if not user:
             raise serializers.ValidationError(
                 {"user_id": "User ID is required to create a label."}
             )
 
-        owner = Profile.objects.filter(user_id=user_id).first()
+        owner = Profile.objects.filter(user=user).first()
         if not owner:
             raise serializers.ValidationError(
                 {"owner": "Profile is required to create a label."}

@@ -45,7 +45,7 @@ class TaskViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         return {
-            "user_id": self.request.user.id,
+            "user": self.request.user,
             "task_list_id": self.kwargs.get("list_pk", None),
         }
 
@@ -79,7 +79,7 @@ class TaskStepViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         return {
-            "user_id": self.request.user.id,
+            "user": self.request.user,
             "task_id": self.kwargs.get("task_pk", None),
         }
 
@@ -89,7 +89,7 @@ class LabelViewSet(ModelViewSet):
     serializer_class = LabelSerializer
 
     def get_serializer_context(self):
-        return {"user_id": self.request.user.id}
+        return {"user": self.request.user}
 
     def get_queryset(self):
         return Label.objects.filter(owner__user=self.request.user)

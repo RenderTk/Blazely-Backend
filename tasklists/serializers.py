@@ -11,9 +11,7 @@ TaskList: Model = apps.get_model(settings.TASKLIST_MODEL)
 GroupList: Model = apps.get_model(settings.GROUP_LIST_MODEL)
 
 # Serializers
-TaskSerializer: serializers.ModelSerializer = import_string(
-    settings.TASK_SERIALIZER
-)
+TaskSerializer: serializers.ModelSerializer = import_string(settings.TASK_SERIALIZER)
 
 
 class TaskListSerializer(serializers.ModelSerializer):
@@ -35,8 +33,8 @@ class TaskListSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        user_id = self.context.get("user_id")
-        owner = Profile.objects.filter(user_id=user_id).first()
+        user = self.context.get("user")
+        owner = Profile.objects.filter(user=user).first()
         if not owner:
             raise serializers.ValidationError(
                 {"owner": "Profile is required to create a task list."}
@@ -62,8 +60,8 @@ class TaskListWithoutGroupSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "emoji", "tasks"]
 
     def create(self, validated_data):
-        user_id = self.context.get("user_id")
-        owner = Profile.objects.filter(user_id=user_id).first()
+        user = self.context.get("user")
+        owner = Profile.objects.filter(user=user).first()
         if not owner:
             raise serializers.serializers.ValidationError(
                 {"owner": "Profile is required to create a task list."}

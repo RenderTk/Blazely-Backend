@@ -18,14 +18,14 @@ TaskListWithoutGroupSerializer: serializers.ModelSerializer = import_string(
 
 class GroupListSerializer(serializers.ModelSerializer):
     lists = TaskListWithoutGroupSerializer(many=True, read_only=True)
-    
+
     class Meta:
         model = GroupList
         fields = ["id", "name", "lists"]
 
     def create(self, validated_data):
-        user_id = self.context.get("user_id")
-        owner = Profile.objects.filter(user_id=user_id).first()
+        user = self.context.get("user")
+        owner = Profile.objects.filter(user=user).first()
         if GroupList.objects.filter(name=validated_data["name"], owner=owner).exists():
             raise serializers.ValidationError(
                 {"name": "Group list with given name already exists."}
