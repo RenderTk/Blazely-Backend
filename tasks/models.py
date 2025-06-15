@@ -5,6 +5,7 @@ from django.conf import settings
 PROFILE_MODEL = settings.PROFILE_MODEL
 TASK_LIST_MODEL = settings.TASKLIST_MODEL
 
+
 class Label(models.Model):
     name = models.CharField(max_length=100)
     owner = models.ForeignKey(
@@ -16,6 +17,9 @@ class Label(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["name", "owner"], name="unique_label")
         ]
+
+    def __str__(self):
+        return self.name
 
 
 class Task(models.Model):
@@ -53,7 +57,7 @@ class Task(models.Model):
     archived = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.main_text
+        return self.text
 
 
 class TaskStep(models.Model):

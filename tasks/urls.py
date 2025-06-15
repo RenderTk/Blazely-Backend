@@ -4,3 +4,4 @@ from . import views
 # Main router
 router = routers.DefaultRouter()
 router.register("tasks", views.TaskViewSet, basename="task")
+router.register("labels", views.LabelViewSet, basename="label")

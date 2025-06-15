@@ -37,7 +37,9 @@ class GroupListViewSet(ModelViewSet):
         action = self.request.query_params.get("action", None)
         if action not in ["add", "remove"]:
             return Response(
-                {"action": "Invalid or missing action. Expected 'add' or 'remove'."},
+                {
+                    "action": "Invalid or missing query parameter action. Expected 'add' or 'remove'."
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         # gets the group object in the url and validates if it exists

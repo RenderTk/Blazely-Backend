@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Task, TaskStep
-from .serializers import TaskSerializer, TaskStepSerializer
+from .models import Task, TaskStep, Label
+from .serializers import TaskSerializer, TaskStepSerializer, LabelSerializer
 from .filters import TaskFilter, TaskStepFilter
 
 
@@ -71,3 +71,14 @@ class TaskStepViewSet(ModelViewSet):
             "user_id": self.request.user.id,
             "task_id": self.kwargs.get("task_pk", None),
         }
+
+
+class LabelViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = LabelSerializer
+
+    def get_serializer_context(self):
+        return {"user_id": self.request.user.id}
+
+    def get_queryset(self):
+        return Label.objects.filter(owner__user=self.request.user)
