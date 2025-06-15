@@ -48,7 +48,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "core",
-    "todo",
+    "profiles",
+    "tasks",
+    "tasklists",
+    "grouplists",
 ]
 
 MIDDLEWARE = [
@@ -182,3 +185,15 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv("SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET")
 SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = os.getenv(
     "SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI"
 )
+
+
+#BLAZELY APP'S MODELS
+PROFILE_MODEL = "profiles.Profile"
+TASK_MODEL = "tasks.Task"
+TASKLIST_MODEL = "tasklists.TaskList"
+GROUP_LIST_MODEL = "grouplists.GroupList"
+
+#BLAZELY APP'S SERIALIZERS
+SIMPLE_USER_SERIALIZER = "core.serializers.SimpleUserSerializer"
+TASK_SERIALIZER = "tasks.serializers.TaskSerializer"
+TASKLIST_WITHOUT_GROUP_SERIALIZER = "tasklists.serializers.TaskListWithoutGroupSerializer"

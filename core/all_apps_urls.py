@@ -1,18 +1,27 @@
 from rest_framework_nested import routers
-from .views import (
-    BlazelyProfileViewSet,
-    TaskViewSet,
-    TaskStepViewSet,
-    TaskListViewSet,
-    GroupListViewSet,
-)
+from profiles.urls import router as profiles_router
+from grouplists.urls import router as group_router
+from tasklists.urls import router as list_router
+from tasks.urls import router as task_router
+from tasks.views import TaskViewSet, TaskStepViewSet
+from tasklists.views import TaskListViewSet
+from .urls import router as core_router
 
-# Main router
 router = routers.DefaultRouter()
-router.register("profiles", BlazelyProfileViewSet, basename="profile")
-router.register("lists", TaskListViewSet, basename="list")
-router.register("groups", GroupListViewSet, basename="group")
-router.register("tasks", TaskViewSet, basename="task")
+for r in profiles_router.registry:
+    router.registry.append(r)
+
+for r in group_router.registry:
+    router.registry.append(r)
+
+for r in list_router.registry:
+    router.registry.append(r)
+
+for r in task_router.registry:
+    router.registry.append(r)
+
+# for r in core_router.registry:
+#     router.registry.append(r)
 
 
 # Group -> Lists nesting
@@ -37,7 +46,6 @@ list_router.register(
     "tasks", TaskViewSet, basename="list-task"
 )  # Note: Changed to TaskViewSet
 
-
 # Lists -> Tasks -> Steps nesting
 list_task_router = routers.NestedDefaultRouter(list_router, "tasks", lookup="task")
 list_task_router.register("steps", TaskStepViewSet, basename="list-task-step")
@@ -45,6 +53,9 @@ list_task_router.register("steps", TaskStepViewSet, basename="list-task-step")
 
 task_step_router = routers.NestedDefaultRouter(router, "tasks", lookup="task")
 task_step_router.register("steps", TaskStepViewSet, basename="task-step")
+
+
+
 
 # Combine all URLs
 urlpatterns = (

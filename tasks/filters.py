@@ -1,6 +1,5 @@
 import django_filters
-from todo.models import *
-
+from .models import Task, TaskStep
 
 class TaskFilter(django_filters.FilterSet):
     has_reminder = django_filters.BooleanFilter(
@@ -26,33 +25,10 @@ class TaskFilter(django_filters.FilterSet):
             "label": ["exact"],
         }
 
-
 class TaskStepFilter(django_filters.FilterSet):
     class Meta:
         model = TaskStep
         fields = {
             "task": ["exact"],
             "text": ["icontains"],
-        }
-
-
-class TaskListFilter(django_filters.FilterSet):
-
-    has_group = django_filters.BooleanFilter(
-        field_name="group", lookup_expr="isnull", label="Has Group", exclude=True
-    )
-
-    class Meta:
-        model = TaskList
-        fields = {
-            "name": ["icontains"],
-            "group": ["exact"],
-        }
-
-
-class GroupListFilter(django_filters.FilterSet):
-    class Meta:
-        model = GroupList
-        fields = {
-            "name": ["icontains"],
         }

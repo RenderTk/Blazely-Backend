@@ -9,7 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from typing import Dict
-from todo.models import BlazelyProfile
+from profiles.models import Profile
 from .models import GOOGLE_AUTH_PROVIDER
 from .models import User
 
@@ -36,7 +36,7 @@ def get_or_create_user(
     if created:
         user.set_unusable_password()
         user.save()
-        BlazelyProfile.objects.create(user=user, profile_picture_url=picture_url)
+        Profile.objects.create(user=user, profile_picture_url=picture_url)
 
     return user
 

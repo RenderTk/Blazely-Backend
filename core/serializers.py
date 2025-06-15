@@ -1,6 +1,8 @@
 from django.db import transaction
+from django.conf import settings
+from django.apps import apps
 from rest_framework import serializers
-from todo.models import BlazelyProfile
+from profiles.models import Profile
 from .models import User
 
 
@@ -39,7 +41,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         user = super().create(validated_data)
-        BlazelyProfile.objects.create(user=user)
+        Profile.objects.create(user=user)
         return user
 
 
@@ -101,3 +103,8 @@ class UserActivationSerializer(serializers.Serializer):
             self.instance.is_active = False
 
         self.instance.save()
+
+class SimpleUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["username", "email", "first_name", "last_name"]
