@@ -1,22 +1,31 @@
+from django.utils.module_loading import import_string
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, BasePermission
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import GroupList
 from .serializers import GroupListSerializer, ManageListsOnGroupSerializer
 from .filters import GroupListFilter
 
+# Custom permissions
+IsSuperUser: BasePermission = import_string("core.permisions.IsSuperUser")
+
 
 class GroupListViewSet(ModelViewSet):
-    serializer_class = GroupListSerializer
     permission_classes = [IsAuthenticated]
+    serializer_class = GroupListSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = GroupListFilter
 
     def get_queryset(self):
         user = self.request.user
+
+        if user.is_superuser:
+            return GroupList.objects.prefetch_related("lists__tasks__steps").order_by(
+                "created_at"
+            )
 
         return (
             GroupList.objects.prefetch_related("lists__tasks__steps")

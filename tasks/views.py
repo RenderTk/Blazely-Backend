@@ -10,8 +10,8 @@ from .filters import TaskFilter, TaskStepFilter
 
 # Create your views here.
 class TaskViewSet(ModelViewSet):
-    serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
+    serializer_class = TaskSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = TaskFilter
 
@@ -19,18 +19,29 @@ class TaskViewSet(ModelViewSet):
         user = self.request.user
         task_list_id = self.kwargs.get("list_pk", None)
 
-        if not task_list_id:
+        if user.is_superuser:
+            if task_list_id:
+                return (
+                    Task.objects.prefetch_related("steps")
+                    .filter(task_list=task_list_id)
+                    .order_by("created_at")
+                )
+
+            return Task.objects.prefetch_related("steps").order_by("created_at")
+
+        else:
+            if not task_list_id:
+                return (
+                    Task.objects.prefetch_related("steps")
+                    .filter(owner__user=user)
+                    .order_by("created_at")
+                )
+
             return (
                 Task.objects.prefetch_related("steps")
-                .filter(owner__user=user)
+                .filter(owner__user=user, task_list=task_list_id)
                 .order_by("created_at")
             )
-
-        return (
-            Task.objects.prefetch_related("steps")
-            .filter(owner__user=user, task_list=task_list_id)
-            .order_by("created_at")
-        )
 
     def get_serializer_context(self):
         return {

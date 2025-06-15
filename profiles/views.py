@@ -17,17 +17,18 @@ IsSuperUser: BasePermission = import_string("core.permisions.IsSuperUser")
 # Create your views here.
 class ProfileViewSet(ModelViewSet):
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ["get", "patch", "head", "options"]
 
     def get_permissions(self):
         if self.action == "list":
             return [IsSuperUser()]
-        return super().get_permissions()
+
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         if self.request.user.is_superuser:
             return Profile.objects.all()
+
         return (
             Profile.objects.prefetch_related("group_lists__lists__tasks__steps")
             .filter(user=self.request.user)
@@ -42,7 +43,7 @@ class ProfileViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {"user": self.request.user}
 
-    @action(detail=False, methods=["get", "patch"])
+    @action(detail=False, methods=["get"])
     def me(self, request):
         user = self.request.user
         profile = get_object_or_404(Profile, user=user)
